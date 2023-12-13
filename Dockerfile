@@ -1,24 +1,13 @@
-# Common build stage
-FROM node:14.14.0-alpine3.12 as common-build-stage
-
-COPY . ./app
+FROM node:16 AS builder
 
 WORKDIR /app
 
-RUN npm install
+COPY package*.json ./
 
-EXPOSE 3000
+RUN npm install --legacy-peer-deps
 
-# Dvelopment build stage
-FROM common-build-stage as development-build-stage
+COPY . .
 
-ENV NODE_ENV development
+EXPOSE 5000
 
-CMD ["npm", "run", "dev"]
-
-# Production build stage
-FROM common-build-stage as production-build-stage
-
-ENV NODE_ENV production
-
-CMD ["npm", "run", "start"]
+CMD [ "npm", "run", "dev" ]

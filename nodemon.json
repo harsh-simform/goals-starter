@@ -1,12 +1,6 @@
 {
-    "ignore": [
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        "node_modules"
-    ],
-    "watch": [
-        "src"
-    ],
-    "exec": "npm start",
-    "ext": "ts"
+  "watch": ["src"],
+  "ext": ".ts",
+  "ignore": [],
+  "exec": "dotenv -e .development.env -- ts-node ./src/index.ts"
 }

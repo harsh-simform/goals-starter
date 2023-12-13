@@ -1,7 +1,28 @@
-node_modules
-dist
-.env
-temp
-src/schema.gql
+# VS Code
 .vscode
-.idea
+!.vscode/tasks.js
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+
+# dotenv environment variable files
+.development.env
+.production.env
+
+# Logs
+logs/
+
+# Uploaded Files
+uploads
