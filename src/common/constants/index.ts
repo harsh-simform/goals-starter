@@ -2,4 +2,4 @@
 export * from './http-status';
 
 // Constant Common ENUMs
-export * from './constant-enum';
+export * from './enums';

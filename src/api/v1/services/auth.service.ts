@@ -1,11 +1,10 @@
 import { sign, verify } from 'jsonwebtoken';
 import { Request } from 'express';
 
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
+import { prisma } from '../../../common/helper/utils';
 
 const jwtSecret = process.env?.JWT_SECRET as string;
-
-const prisma = new PrismaClient();
 
 /**
  * Create Access Token

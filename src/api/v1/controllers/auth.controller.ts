@@ -2,19 +2,18 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { validationResult, matchedData } from 'express-validator';
 
 import { hash } from 'bcrypt';
-import { PrismaClient, User } from '@prisma/client';
-import { authRules } from '../rules/auth.rules';
+import { User } from '@prisma/client';
+import { authRules } from '../middlewares/user.middleware';
 import {
   login,
   signAccessToken,
   signRefreshToken,
   reIssueTokens,
 } from '../services/auth.service';
-import { HttpStatus } from '../../../../common/constants';
-import { logger, succeeded, failed } from '../../../../common/helper';
+import { HttpStatus } from '../../../common/constants';
+import { logger, succeeded, failed, prisma } from '../../../common/helper';
 
 const saltRounds = parseInt(`${process.env?.SALT_ROUNDS}`, 10);
-const prisma = new PrismaClient();
 const AuthController: Router = Router();
 
 /**
@@ -90,7 +89,7 @@ AuthController.post(
       }) as User;
       const data = await login(payload);
 
-      return succeeded(res, HttpStatus.OK, 'Logged-In Successfully.', data);
+      return succeeded(res, HttpStatus.OK, 'loggedin successfully.', data);
     } catch (error) {
       logger.error(error);
       next(error);

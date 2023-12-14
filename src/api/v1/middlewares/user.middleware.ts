@@ -1,10 +1,8 @@
 import { check } from 'express-validator';
 import { compare } from 'bcrypt';
 
-import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '../services/auth.service';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../../common/helper/utils';
 
 export const authRules = {
   forSignup: [

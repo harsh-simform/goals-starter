@@ -4,9 +4,7 @@ import fs from 'fs';
 import { format, createLogger, transports } from 'winston';
 import 'winston-daily-rotate-file';
 
-import { ENV } from '../constants';
-
-const env = process.env.NODE_ENV || ENV.DEV;
+const env = process.env.NODE_ENV;
 const logDirectory = path.join(process.cwd(), 'logs');
 
 // Check that `logs` folder is exists or not, and if not than make one
@@ -22,10 +20,10 @@ const enumerateErrorFormat = format((info) => {
 });
 
 export const logger = createLogger({
-  level: env === ENV.DEV ? 'debug' : 'info',
+  level: env === 'development' ? 'debug' : 'info',
   format: format.combine(
     enumerateErrorFormat(),
-    env === ENV.DEV ? format.colorize() : format.uncolorize(),
+    env === 'development' ? format.colorize() : format.uncolorize(),
     format.splat(),
     format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     format.printf(
@@ -41,7 +39,7 @@ export const logger = createLogger({
 });
 
 // In production then log to the `files`
-if (process.env.NODE_ENV === ENV.PROD) {
+if (process.env.NODE_ENV === 'production') {
   logger.add(
     new transports.DailyRotateFile({
       filename: path.join(logDirectory, 'error-%DATE%.log'),

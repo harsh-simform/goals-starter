@@ -1,6 +1,5 @@
-import { Post, PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Post } from '@prisma/client';
+import { prisma } from '../../../common/helper/utils';
 
 /**
  * Create New Post

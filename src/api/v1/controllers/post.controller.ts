@@ -1,17 +1,16 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { validationResult, matchedData } from 'express-validator';
 
-import { Post, PrismaClient } from '@prisma/client';
-import { HttpStatus } from '../../../../common/constants';
-import { logger, succeeded, failed } from '../../../../common/helper';
-import { tokenGuard } from '../../auth/middlewares/token-guard';
-import { postRules } from '../rules/post.rules';
+import { Post } from '@prisma/client';
+import { HttpStatus } from '../../../common/constants';
+import { logger, succeeded, failed } from '../../../common/helper';
+import { tokenGuard } from '../middlewares/auth.middleware';
+import { postRules } from '../middlewares/post.middleware';
 import { createNewPost } from '../services/post.service';
-import redisClient from '../../../../common/helper/redis';
+import redisClient from '../../../common/helper/redis';
+import { prisma } from '../../../common/helper/utils';
 
 const PostController: Router = Router();
-
-const prisma = new PrismaClient();
 
 PostController.get(
   '/',
@@ -29,7 +28,9 @@ PostController.get(
           errors.array()[0].msg
         );
       }
-      const checkCache = await redisClient.get(JSON.stringify(req.query));
+      const checkCache = await redisClient.get(
+        JSON.stringify({ ...req.query, model: 'post' })
+      );
       if (checkCache) {
         logger.info('getting from the cache');
         const count = await prisma.post.count({
@@ -94,7 +95,11 @@ PostController.get(
         return failed(res, HttpStatus.FORBIDDEN, 'No posts are available');
       }
 
-      await redisClient.setEx(JSON.stringify(req.query), 3600, JSON.stringify(posts));
+      await redisClient.setEx(
+        JSON.stringify({ ...req.query, model: 'post' }),
+        3600,
+        JSON.stringify(posts)
+      );
 
       return succeeded(res, HttpStatus.OK, 'Successful.', { posts, count });
     } catch (error) {

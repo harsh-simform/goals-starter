@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable import/first */
 import express, { Application, Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';

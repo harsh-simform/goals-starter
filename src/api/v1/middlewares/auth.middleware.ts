@@ -3,8 +3,8 @@ import { IncomingHttpHeaders } from 'http';
 import { RequestHandler } from 'express';
 
 import { verifyToken } from '../services/auth.service';
-import { HttpStatus } from '../../../../common/constants';
-import { failed } from '../../../../common/helper';
+import { HttpStatus } from '../../../common/constants';
+import { failed } from '../../../common/helper';
 
 const getTokenFromHeaders = (headers: IncomingHttpHeaders) => {
   const header = headers.authorization as string;
