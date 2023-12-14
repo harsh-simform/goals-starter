@@ -2,7 +2,6 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
 import { failed, logger, prisma, succeeded } from '../../../common/helper';
 import { tokenGuard } from '../middlewares';
-import { groupRules } from '../middlewares/group.middleware';
 import { HttpStatus } from '../../../common/constants';
 import redisClient from '../../../common/helper/redis';
 
@@ -11,7 +10,6 @@ const GroupController: Router = Router();
 GroupController.post(
   '/',
   tokenGuard(),
-  groupRules.forCreateGroup,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { name, userIds } = req.body;
@@ -39,7 +37,6 @@ GroupController.post(
 GroupController.get(
   '/',
   tokenGuard(),
-  groupRules.forGroupGet,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { skip, take, search } = req.query;

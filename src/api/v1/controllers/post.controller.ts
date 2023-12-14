@@ -5,7 +5,6 @@ import { Post } from '@prisma/client';
 import { HttpStatus } from '../../../common/constants';
 import { logger, succeeded, failed } from '../../../common/helper';
 import { tokenGuard } from '../middlewares/auth.middleware';
-import { postRules } from '../middlewares/post.middleware';
 import { createNewPost } from '../services/post.service';
 import redisClient from '../../../common/helper/redis';
 import { prisma } from '../../../common/helper/utils';
@@ -15,7 +14,6 @@ const PostController: Router = Router();
 PostController.get(
   '/',
   tokenGuard(),
-  postRules.forPostGet,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { skip, take, search } = req.query;
@@ -115,7 +113,6 @@ PostController.get(
 PostController.post(
   '/',
   tokenGuard(),
-  postRules.forPostCreate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);

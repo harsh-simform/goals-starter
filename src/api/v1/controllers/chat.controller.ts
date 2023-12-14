@@ -1,22 +1,31 @@
+/* eslint-disable import/no-cycle */
 import { validationResult } from 'express-validator';
+import { Socket } from 'socket.io';
 import { NextFunction, Request, Response, Router } from 'express';
 import { tokenGuard } from '../middlewares';
-import { chatRules } from '../middlewares/chat.middleware';
 import { failed, logger, prisma, succeeded } from '../../../common/helper';
 import { HttpStatus } from '../../../common/constants';
 import redisClient from '../../../common/helper/redis';
+import { createOrReturnRoom } from '../services/chat.service';
 
 const ChatController: Router = Router();
 
 ChatController.post(
   '/',
   tokenGuard(),
-  chatRules.forCreateChat,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const io: Socket = req.app.get('io');
       const { text, sendTo } = req.body;
+      const users = [sendTo, req.authUser.id];
+      const room = await createOrReturnRoom(users);
       const chat = await prisma.chat.create({
         include: {
+          chatRoom: {
+            select: {
+              name: true,
+            },
+          },
           Receiver: {
             select: {
               id: true,
@@ -34,6 +43,11 @@ ChatController.post(
         },
         data: {
           text: text?.trim(),
+          chatRoom: {
+            connect: {
+              id: room?.id,
+            },
+          },
           Sender: {
             connect: {
               id: req.authUser.id,
@@ -46,6 +60,8 @@ ChatController.post(
           },
         },
       });
+      console.log('emitting event to room', `message-in-${room.name}`);
+      io.to(room.name).emit(`message-in-${room.name}`, text);
       return succeeded(res, HttpStatus.OK, 'Message sent.', { chat });
     } catch (error) {
       logger.error(error);
@@ -57,7 +73,6 @@ ChatController.post(
 ChatController.get(
   '/',
   tokenGuard(),
-  chatRules.forChatGet,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { skip, take, search } = req.query;

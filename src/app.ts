@@ -6,9 +6,14 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createOrReturnRoom } from './api/v1/services/chat.service';
 import routes from './common/routes';
-import { HttpStatus } from './common/constants';
 import { logger, failed } from './common/helper';
+import redisClient from './common/helper/redis';
+import { HttpStatus } from './common/constants';
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -19,7 +24,32 @@ const limiter = rateLimit({
 // Boot express
 const app: Application = express();
 
+const server = createServer(app);
+
+const io = new Server(server);
+
+const redisAdapter = createAdapter(redisClient, redisClient.duplicate());
+
+io.adapter(redisAdapter);
+
+// Socket.IO event handling
+io.on('connection', (socket) => {
+  logger.info(`${socket.id} -- connected!`);
+
+  socket.on('create-new-chat', async (data: { userIds: number[] }) => {
+    const room = await createOrReturnRoom(data.userIds);
+    socket.join(room.name);
+    socket.emit('new-chat-response', room.name);
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    logger.info(`${socket.id} -- disconnected!`);
+  });
+});
+
 // Initialize Middleware //
+app.set('io', io);
 // Setup API logs
 app.use(morgan('combined'));
 // Setup common security protection
@@ -48,4 +78,4 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   return failed(res, error.statusCode, error.message, error.data);
 });
 
-export default app;
+export default server;

@@ -1,30 +1,8 @@
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 import { User } from '@prisma/client';
-import { createClient } from 'redis';
-import { createAdapter } from '@socket.io/redis-adapter';
-import app from './app';
-import { logger } from './common/helper';
+import { Socket } from 'socket.io';
+import server from './app';
 
 const port = process.env.PORT;
-
-const server = createServer(app);
-const io = new Server(server);
-
-io.on('connnection', (socket) => {
-  logger.info('a user connected!', socket);
-  socket.on('disconnect', () => {
-    logger.info('user disconnected');
-  });
-});
-
-const pubClient = createClient({ url: process.env.REDIS_URL });
-const subClient = pubClient.duplicate();
-
-Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
-  io.adapter(createAdapter(pubClient, subClient));
-  io.listen(3000);
-});
 
 // Start server
 server.listen(port, () => {
@@ -37,6 +15,7 @@ declare global {
   namespace Express {
     export interface Request {
       authUser: User;
+      io: Socket;
     }
     export interface Response {
       authUser: User;
